@@ -1,7 +1,6 @@
 apply plugin: 'cargo'
 
 
-
 repositories {
     mavenCentral()
 }
@@ -34,20 +33,21 @@ cargo {
     deployable {
         file = file(destinationLocation + File.separator + warName)
     }
-    remote {
-        hostname = serverHostName
-        username = serverUserName
-        password = serverPassword
+
+    local {
+        homeDir = file(serverHome)
+        output = file(serverLogFile)
     }
 }
 
-task deployOpenLmis{
-    task = ['downloadFile']
-    task = ['cargoRedeployRemote']
-//    task = ['stopContainer']
-//    task = ['cargoDeployRemote']
-//    task = ['runContainer']
+task deployOpenLmis << {
+    cargoStopLocal.execute()
+    tasks.downloadFile.execute()
+    cargoRunLocal.execute()
 }
+
+
 task downloadFile {
-    ant.get(src: warSourceUrl + warName, dest: destinationLocation)
+    ant.get(src: warSourceUrl + warName, dest: destinationLocation, verbose: 'true')
 }
+
